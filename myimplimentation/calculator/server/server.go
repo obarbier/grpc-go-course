@@ -19,6 +19,22 @@ func (*CalulatorServer) Sum(c context.Context, sr *calculatorpb.SumRequest) (*ca
 
 	return res, nil
 }
+
+func (*CalulatorServer) PrimeNumberDecomposition(req *calculatorpb.PrimeNumberDecompositionRequest, stream calculatorpb.Calulator_PrimeNumberDecompositionServer) error {
+	N := req.GetNumber()
+	var K int32 = 2
+	for N > 1 {
+		if N%K == 0 {
+			stream.Send(&calculatorpb.PrimeNumberDecompositionResponse{
+				Result: K,
+			})
+			N = N / K
+		} else {
+			K++
+		}
+	}
+	return nil
+}
 func main() {
 	log.Printf("Setting up a Server\n")
 	cc, err := net.Listen("tcp", "0.0.0.0:50051")

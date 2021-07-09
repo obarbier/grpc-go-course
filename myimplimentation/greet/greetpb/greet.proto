@@ -16,8 +16,20 @@ message GreetResponse{
     string result = 1;
 }
 
+message GreetManyTimesRequest{
+    Greeting greeting = 1;
+}
+
+
+message GreetManyTimesResponse{
+    string result = 1;
+}
+
 service GreetService{
     
     // unary 
     rpc Greet(GreetRequest) returns (GreetResponse){}; //Note: the patern rpc [RPC_NAME]([RPC_NAME]Request) returns ([RPC_NAME]Response){};
+
+    // Stream Server
+    rpc GreetManyTimes(GreetManyTimesRequest) returns (stream GreetManyTimesResponse){};
 }
