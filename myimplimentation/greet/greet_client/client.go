@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"grpc-go-course/myimplimentation/greet/greetpb"
 	"log"
 
@@ -9,14 +9,30 @@ import (
 )
 
 func main() {
-	fmt.Println("Setting Client")
+	log.Println("Setting Client")
 
-	cc, err := grpc.Dial("localhost:500501", grpc.WithInsecure())
+	cc, err := grpc.Dial("0.0.0.0:50051", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
 	defer cc.Close()
 	c := greetpb.NewGreetServiceClient(cc)
+	doUnary(c)
+}
 
-	fmt.Printf("created client:%v", c)
+func doUnary(c greetpb.GreetServiceClient) {
+	log.Printf("Calling doUnary")
+	greet := &greetpb.Greeting{
+		FirstName: "Olivier",
+		LastName:  "Barbier",
+	}
+	req := &greetpb.GreetRequest{
+		Greeting: greet,
+	}
+	resp, err := c.Greet(context.Background(), req)
+	if err != nil {
+		log.Fatalf("Response is not accepted: %v", err)
+	}
+
+	log.Printf("Response from Server: %v", resp.GetResult())
 }

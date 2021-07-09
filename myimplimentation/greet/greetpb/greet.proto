@@ -3,4 +3,21 @@ syntax = "proto3";
 package greet;
 option go_package="./greet/greetpb";
 
-service GreetService{}
+message Greeting{ // Camel Case
+    string first_name = 1; // seperated by underscore (_)
+    string last_name = 2;
+}
+
+message GreetRequest{
+    Greeting greeting = 1;
+}
+
+message GreetResponse{
+    string result = 1;
+}
+
+service GreetService{
+    
+    // unary 
+    rpc Greet(GreetRequest) returns (GreetResponse){}; //Note: the patern rpc [RPC_NAME]([RPC_NAME]Request) returns ([RPC_NAME]Response){};
+}
