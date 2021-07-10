@@ -6,8 +6,11 @@ import (
 	"io"
 	"log"
 	"sync"
+	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -22,7 +25,9 @@ func main() {
 	// doUnary(c)
 	// doServerStream(c)
 	// doClientStream(c)
-	doBidiStream(c)
+	// doBidiStream(c)
+	doUnaryWithDealine(c, 5*time.Second)
+	doUnaryWithDealine(c, 1*time.Second)
 }
 
 func doUnary(c greetpb.GreetServiceClient) {
@@ -194,4 +199,36 @@ func doBidiStream(c greetpb.GreetServiceClient) {
 	}
 	go receiver()
 	<-waitChan
+}
+
+func doUnaryWithDealine(c greetpb.GreetServiceClient, timeout time.Duration) {
+	log.Printf("Calling doUnaryWithDealine")
+	greet := &greetpb.Greeting{
+		FirstName: "Olivier",
+		LastName:  "Barbier",
+	}
+	req := &greetpb.GreetWithDeadlineRequest{
+		Greeting: greet,
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	resp, err := c.GreetWithDeadline(ctx, req)
+	if err != nil {
+		statusErr, ok := status.FromError(err)
+		if ok {
+			// GRPC error
+			if statusErr.Code() == codes.DeadlineExceeded {
+				log.Printf("Deadline Exceeded")
+			} else {
+				log.Printf("Other Error(Code: %v) Occured: %v\n", statusErr.Code(), statusErr.Message())
+			}
+		} else {
+			log.Fatalf("Response is not accepted: %v", err)
+		}
+
+		return
+
+	}
+
+	log.Printf("Response from Server: %v", resp.GetResult())
 }

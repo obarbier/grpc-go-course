@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type server struct{}
@@ -84,6 +86,26 @@ func (*server) GreetEveryone(stream greetpb.GreetService_GreetEveryoneServer) er
 			return sendErr
 		}
 	}
+}
+func (*server) GreetWithDeadline(ctx context.Context, req *greetpb.GreetWithDeadlineRequest) (*greetpb.GreetWithDeadlineRespone, error) {
+	log.Printf("GreetWithDeadline function was invoked with Request: %v\n", req)
+
+	// for {
+	select {
+	case <-ctx.Done():
+		//Timeout Excedded
+		log.Print("The client canceled the request!")
+		return nil, status.Error(codes.Canceled, "the client canceled the request")
+	case <-time.After(3 * time.Second):
+		firstname := req.GetGreeting().GetFirstName()
+		response := fmt.Sprintf("Hello: %v", firstname)
+		res := &greetpb.GreetWithDeadlineRespone{
+			Result: response,
+		}
+		return res, nil
+	}
+	// }
+
 }
 
 func main() {

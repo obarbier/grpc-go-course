@@ -7,6 +7,8 @@ import (
 	"log"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -21,7 +23,8 @@ func main() {
 	// doSum(cClient)
 	// doPrimeNumberDecomposition(cClient)
 	// doComputeAverage(cClient)
-	doBidi(cClient)
+	// doBidi(cClient)
+	doErrorCode(cClient)
 }
 
 func doSum(cClient calculatorpb.CalulatorClient) {
@@ -125,5 +128,35 @@ func doBidi(cClient calculatorpb.CalulatorClient) {
 		}
 		log.Printf("Result: %v\n", res.Result)
 	}
+
+}
+
+func doErrorCode(cClient calculatorpb.CalulatorClient) {
+
+	call := func(number int32) {
+		res, err := cClient.SquareRoot(context.Background(), &calculatorpb.SquareRootRequest{
+			Number: number,
+		})
+		if err != nil {
+			respErr, ok := status.FromError(err)
+			if ok {
+				// error comming from GRPC
+				log.Printf("Grpc Error: %v\n", respErr.Message())
+				if respErr.Code() == codes.InvalidArgument {
+					log.Printf("Negative number was sent")
+				}
+			} else {
+				// Framework error
+				log.Fatalf("Fatal error:%v\n", respErr)
+			}
+
+			return
+		}
+
+		log.Printf("Result: %v\n", res.Result)
+	}
+
+	call(4)
+	call(-4)
 
 }

@@ -2,12 +2,16 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"grpc-go-course/myimplimentation/calculator/calculatorpb"
 	"io"
 	"log"
+	"math"
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type CalulatorServer struct{}
@@ -99,6 +103,20 @@ func (*CalulatorServer) FindMaximum(stream calculatorpb.Calulator_FindMaximumSer
 		}
 	}
 
+}
+
+func (*CalulatorServer) SquareRoot(ctx context.Context, req *calculatorpb.SquareRootRequest) (*calculatorpb.SquareRootResponse, error) {
+	log.Printf("Invoking sum service with value: %v\n", req)
+	number := req.GetNumber()
+
+	if number < 0 {
+		return nil, status.Errorf(codes.InvalidArgument,
+			fmt.Sprintf("Receiver a negative number: %d\n", number))
+	}
+
+	return &calculatorpb.SquareRootResponse{
+		Result: math.Sqrt(float64(number)),
+	}, nil
 }
 
 func main() {

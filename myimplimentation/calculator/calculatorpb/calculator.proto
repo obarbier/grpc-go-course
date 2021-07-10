@@ -37,9 +37,19 @@ message FindMaximumResponse{
     double result =  1;
 }
 
+message SquareRootRequest{
+    int32 number =1;
+}
+
+message SquareRootResponse{
+    double result =1;
+}
+
 service Calulator {
     //unary
     rpc Sum(SumRequest) returns (SumResponse){};
+
+    
 
     // Server Streaming
     rpc PrimeNumberDecomposition(PrimeNumberDecompositionRequest) returns (stream PrimeNumberDecompositionResponse){};
@@ -49,4 +59,9 @@ service Calulator {
 
     // Bidi Streaming
     rpc FindMaximum(stream FindMaximumRequest) returns (stream FindMaximumResponse){};
+
+    // Adding comments allow for good documentation Therefore:
+    // SquareRoot will throws execption if SquareRootRequest.number is negative
+    // Error being send is of type INVALID_ARGUMENT
+    rpc SquareRoot(SquareRootRequest) returns (SquareRootResponse){};
 }
