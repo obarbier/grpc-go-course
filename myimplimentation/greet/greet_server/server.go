@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"grpc-go-course/myimplimentation/greet/greetpb"
+	"io"
 	"log"
 	"net"
 	"time"
@@ -36,6 +37,53 @@ func (*server) GreetManyTimes(req *greetpb.GreetManyTimesRequest, stream greetpb
 	}
 
 	return nil
+}
+
+func (*server) LongGreet(stream greetpb.GreetService_LongGreetServer) error {
+	log.Printf("LongGreet function was invoked with Stream\n")
+	result := ""
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			// Stream has closed therefore sending response
+			return stream.SendAndClose(&greetpb.LongGreetResponse{
+				Result: result,
+			})
+
+		}
+
+		if err != nil {
+			log.Fatalf("Some error occureded in LongGreet: %v", err)
+		}
+
+		first_name := req.GetGreeting().GetFirstName()
+		result += "Hello " + first_name + "! "
+	}
+
+}
+
+func (*server) GreetEveryone(stream greetpb.GreetService_GreetEveryoneServer) error {
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			log.Printf("Done Receing Data from client Stream\n")
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("Error while receiving data from client stream: %v\n", err)
+			return err
+		}
+
+		first_name := req.GetGreeting().GetFirstName()
+		sendErr := stream.Send(&greetpb.GreetEveryoneResponse{
+			Result: fmt.Sprintf("Hello %v !", first_name),
+		})
+		time.Sleep(2 * time.Second)
+		if sendErr != nil {
+			log.Fatalf("Error while Sending data to client: %v\n", sendErr)
+			return sendErr
+		}
+	}
 }
 
 func main() {

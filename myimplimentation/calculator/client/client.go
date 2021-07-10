@@ -19,7 +19,9 @@ func main() {
 	defer conn.Close()
 
 	// doSum(cClient)
-	doPrimeNumberDecomposition(cClient)
+	// doPrimeNumberDecomposition(cClient)
+	// doComputeAverage(cClient)
+	doBidi(cClient)
 }
 
 func doSum(cClient calculatorpb.CalulatorClient) {
@@ -56,6 +58,72 @@ func doPrimeNumberDecomposition(cClient calculatorpb.CalulatorClient) {
 		}
 
 		log.Printf("Result from PrimeNumberDecomposition is: %v ", res.Result)
+	}
+
+}
+
+func doComputeAverage(cClient calculatorpb.CalulatorClient) {
+	req := []*calculatorpb.ComputeAverageRequest{
+		{
+			Number: 1,
+		},
+		{
+			Number: 2,
+		},
+		{
+			Number: 3,
+		},
+		{
+			Number: 4,
+		},
+	}
+	stream, err := cClient.ComputeAverage(context.Background())
+	if err != nil {
+		log.Fatalf("Failed to connect to ComputeAverage: %v\n", err)
+	}
+	for _, r := range req {
+		err := stream.Send(r)
+		if err != nil {
+			log.Fatalf("Failed to Send stream to backend: %v\n", err)
+		}
+
+	}
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("error while receiving resullt from backend: %v\n", err)
+	}
+
+	log.Printf("ComputeAverage Result: %v\n", res.Result)
+
+}
+
+func doBidi(cClient calculatorpb.CalulatorClient) {
+	reqs := []float64{-1, -5, -3, -6, -2, -20}
+
+	stream, err := cClient.FindMaximum(context.Background())
+	if err != nil {
+		log.Fatalf("Failed to call FindMaximum: %v\n", err)
+	}
+
+	for _, r := range reqs {
+		stream.Send(&calculatorpb.FindMaximumRequest{
+			Number: r,
+		})
+	}
+
+	stream.CloseSend()
+
+	for {
+		res, err := stream.Recv()
+		if err == io.EOF {
+			log.Printf("Done Proccessing data from server stream")
+			break
+		}
+		if err != nil {
+			log.Fatalf("Error occured while receiving data from server stream: %v\n", err)
+			return
+		}
+		log.Printf("Result: %v\n", res.Result)
 	}
 
 }

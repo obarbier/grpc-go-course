@@ -20,9 +20,33 @@ message PrimeNumberDecompositionRequest{
 message PrimeNumberDecompositionResponse{
     int32 result = 1;
 }
+
+message ComputeAverageRequest{
+    float number = 1;
+}
+
+message ComputeAverageResponse{
+    float result = 1;
+}
+
+message FindMaximumRequest{
+    double number = 1;
+}
+
+message FindMaximumResponse{
+    double result =  1;
+}
+
 service Calulator {
     //unary
     rpc Sum(SumRequest) returns (SumResponse){};
 
+    // Server Streaming
     rpc PrimeNumberDecomposition(PrimeNumberDecompositionRequest) returns (stream PrimeNumberDecompositionResponse){};
+
+    // Client Streaming 
+    rpc ComputeAverage(stream ComputeAverageRequest) returns (ComputeAverageResponse){};
+
+    // Bidi Streaming
+    rpc FindMaximum(stream FindMaximumRequest) returns (stream FindMaximumResponse){};
 }
