@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package myBlog;
+
+option go_package = "./blog/blogpb";
+
+message Blog{
+    string id = 1;
+    string author_id = 2;
+    string title = 3;
+    string content = 4;
+}
+
+message CreateBlogRequest{
+    Blog blog =1;
+}
+
+message CreateBlogResponse{
+    Blog blog =1; //Will have blog id
+    // Need to have created date and updated too
+
+}
+
+message ReadBlogRequest{
+    string id = 1;
+}
+
+message ReadBlogResponse{
+    Blog blog = 1;
+}
+
+message UpdateBlogRequest{
+    Blog blog = 1;
+}
+
+message UpdateBlogResponse{
+    Blog blog = 1;
+}
+
+message DeleteBlogRequest {
+    string id = 1;
+}
+
+message DeleteBlogResponse {
+    string id = 1;
+}
+
+message ListBlogRequest{
+
+}
+
+message ListBlogResponse{
+    Blog blog = 1;  
+}
+
+service  BlogService{
+    rpc CreateBlog (CreateBlogRequest) returns (CreateBlogResponse){};
+
+    // IF Blog Not found Retirn NOT_FOUND Error
+    rpc ReadBlog (ReadBlogRequest) returns (ReadBlogResponse){};
+
+    // IF Blog Not found Retirn NOT_FOUND Error
+    rpc UpdateBlog (UpdateBlogRequest) returns (UpdateBlogResponse){};
+
+    rpc DeleteBlog (DeleteBlogRequest) returns (DeleteBlogResponse); // return NOT_FOUND if not found
+
+    rpc ListBlog (ListBlogRequest) returns (stream ListBlogResponse);
+ }
